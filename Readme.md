@@ -1,4 +1,4 @@
-A simple wrapper for Multichain's JSON RPC api.
+##A simple wrapper for Multichain's JSON RPC api.
 
 All methods from the [multichain api spec](http://www.multichain.com/developers/json-rpc-api/) are usable.
 
@@ -7,6 +7,12 @@ The library includes a parser so you can pass an object containing the parameter
 See commands.js for all commands and their required / optional arguments.
 
 All commands require a callback, but have been tested to work with Bluebird promisification.
+
+To use in your project:
+
+```
+npm install multichain-node --save
+```
 
 Examples:
        
