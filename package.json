@@ -1,7 +1,7 @@
 {
-  "name": "multichain",
+  "name": "multichain-node",
   "version": "0.1.0",
-  "description": "A wrapper for the Multichain JSON RPC API.",
+  "description": "A wrapper for the Multichain JSON-RPC api.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"no tests yet\""
@@ -14,7 +14,7 @@
     "blockchain",
     "multichain",
     "bitcoin",
-    "ledger"
+    "rpc"
   ],
   "author": "Greg Piccolo",
   "license": "ISC",
