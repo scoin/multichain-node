@@ -1,0 +1,28 @@
+{
+  "name": "multichain",
+  "version": "0.1.0",
+  "description": "A wrapper for the Multichain JSON RPC API.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"no tests yet\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scoin/multichain-node.git"
+  },
+  "keywords": [
+    "blockchain",
+    "multichain",
+    "bitcoin",
+    "ledger"
+  ],
+  "author": "Greg Piccolo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/scoin/multichain-node/issues"
+  },
+  "homepage": "https://github.com/scoin/multichain-node#readme",
+  "dependencies": {
+    "json-rpc2": "^1.0.2"
+  }
+}
