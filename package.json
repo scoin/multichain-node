@@ -1,6 +1,6 @@
 {
   "name": "multichain-node",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "A wrapper for the Multichain JSON-RPC api that parses your input.",
   "main": "index.js",
   "scripts": {
