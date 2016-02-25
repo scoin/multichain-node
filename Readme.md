@@ -1,4 +1,4 @@
-A simple full-fledged JSON RPC client built for Multichain and Bitcoin
+A native client built for Multichain and Bitcoin
 ---------------------------------------------------
 
 All methods from the [Multichain api spec](http://www.multichain.com/developers/json-rpc-api/) are available. As multichaind is fully compatible with bitcoind, this will work for bitcoin as well.
@@ -19,13 +19,15 @@ All commands require a callback, but have been tested to work with [Bluebird pro
 
 SSL is supported. Pass your connection parameters as you would to the [core HTTPS library](https://nodejs.org/api/https.html#https_https_globalagent).
 
+###Usage
+
 To use in your project:
 
 ```
 npm install multichain-node --save
 ```
 
-Usage Examples:
+###Examples:
        
 ```javascript 
 let multichain = require("multichain-node")({
