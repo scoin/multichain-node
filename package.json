@@ -1,6 +1,6 @@
 {
   "name": "multichain-node",
-  "version": "0.6.4",
+  "version": "1.0.0",
   "description": "A wrapper for the Multichain JSON-RPC api that parses your input.",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,5 @@
     "url": "https://github.com/scoin/multichain-node/issues"
   },
   "homepage": "https://github.com/scoin/multichain-node#readme",
-  "dependencies": {
-    "json-rpc2": "^1.0.2"
-  }
+  "dependencies": {}
 }
