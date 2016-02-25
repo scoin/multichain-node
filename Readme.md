@@ -1,7 +1,7 @@
-A native client built for Multichain and Bitcoin
+A native Javascript client built for Multichain and Bitcoin
 ---------------------------------------------------
 
-All methods from the [Multichain api spec](http://www.multichain.com/developers/json-rpc-api/) are available. As multichaind is fully compatible with bitcoind, this will work for bitcoin as well.
+All methods from the [Multichain api spec](http://www.multichain.com/developers/json-rpc-api/) are available. As multichaind is fully compatible with bitcoind, this _should_ work for bitcoin as well.
 
 See [commands.js](https://github.com/scoin/multichain-node/blob/development/lib/commands.js) for all methods and their required / optional parameters. 
 
