@@ -22,5 +22,8 @@
     "url": "https://github.com/scoin/multichain-node/issues"
   },
   "homepage": "https://github.com/scoin/multichain-node#readme",
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "bluebird": "^3.3.3"
+  }
 }
