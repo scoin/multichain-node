@@ -1,0 +1,20 @@
+CWD=${PWD##*/}
+if [ "$CWD" == "test" ]; then
+    TESTDIR=$PWD
+else
+    TESTDIR=$PWD/test
+fi
+
+CHAINDIR="$TESTDIR/temp"
+CHAINNAME=test
+CHAINPORT=6601
+
+mkdir $CHAINDIR
+
+multichain-util create $CHAINNAME --datadir=$CHAINDIR
+multichaind $CHAINNAME --datadir=$CHAINDIR --rpcuser=$CHAINNAME --rpcpassword=$CHAINNAME --rpcport=$CHAINPORT --sendfreetransactions & PID=$!; sleep 2
+
+node "$TESTDIR/test.js"
+
+kill -9 $PID
+rm -r $CHAINDIR
