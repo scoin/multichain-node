@@ -4,7 +4,7 @@
   "description": "A wrapper for the Multichain JSON-RPC api that parses your input.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"no tests yet\""
+    "test": "./test/run"
   },
   "repository": {
     "type": "git",
