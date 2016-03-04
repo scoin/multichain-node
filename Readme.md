@@ -1,7 +1,9 @@
 A native Javascript client built for Multichain and Bitcoin
 ---------------------------------------------------
 
-All methods from the [Multichain api spec](http://www.multichain.com/developers/json-rpc-api/) are available. As multichaind is fully compatible with bitcoind, this _should_ work for bitcoin as well.
+Note: The current version is compatible with Multichain Alpha 17, released 3/3/2016. For previous versions of Multichain, see [Releases](https://github.com/scoin/multichain-node/releases).
+
+All methods from the [Multichain API spec](http://www.multichain.com/developers/json-rpc-api/) are available. As multichaind is fully compatible with bitcoind, this _should_ work for bitcoin as well.
 
 See [commands.js](https://github.com/scoin/multichain-node/blob/development/lib/commands.js) for all methods and their required / optional parameters. 
 
@@ -27,7 +29,19 @@ To use in your project:
 npm install multichain-node --save
 ```
 
+To run the tests:
+
+Make sure you have multichain installed, so that `multichaind` and `multichain-util` are on your path.
+
+```
+git clone <the repo>
+npm install
+npm test
+```
+
 ###Examples:
+
+Many more examples in `test.js`, but here's some basics:
        
 ```javascript 
 let multichain = require("multichain-node")({
