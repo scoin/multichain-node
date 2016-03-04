@@ -116,7 +116,15 @@ let startTests = () => {
     })
     .then(revokeTxid => {
         assert(revokeTxid);
-        return multichain.issuePromise({address: this.address1, name: "foocoin", qty: 1000, units: 0.1})
+        return multichain.issuePromise({
+            address: this.address1, 
+            asset: {
+                name: "foocoin",
+                open: true
+            },
+            qty: 1000, 
+            units: 0.1
+        })
     })
     .then(issueTxid => {
         assert(issueTxid);
@@ -145,7 +153,7 @@ let confirmCallback1 = () => {
         return multichain.issueFromPromise({
             from: this.address1,
             to: this.address2,
-            name: "barcoin",
+            asset: "barcoin",
             qty: 10000,
             details: {
                 "foo": "bar"
@@ -399,6 +407,28 @@ let confirmCallback3 = () => {
         })
     })
     .then(tx => {
+        assert(tx);
+        return multichain.issueMorePromise({
+            address: this.address2,
+            asset: "foocoin",
+            qty: 10000
+        })
+    })
+    .then(txid => {
+        listenForConfirmations(txid, (err, confirmed) => {
+            if(err){
+                throw err;
+            }
+            if(confirmed == true){
+                confirmCallback4.call(this);
+            }
+        })
+    })
+}
+
+let confirmCallback4 = () => {
+    bluebird.bind(this)
+    .then(() => {
         return multichain.createMultiSigPromise({
             nrequired: 2,
             keys: [this.address1, this.address2]
