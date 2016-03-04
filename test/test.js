@@ -424,6 +424,10 @@ let confirmCallback3 = () => {
             }
         })
     })
+    .catch(err => {
+        console.log(err)
+        throw err;
+    })
 }
 
 let confirmCallback4 = () => {
