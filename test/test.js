@@ -37,7 +37,7 @@ let getConfirmations = (txid, cb) => {
 }
 
 let startTests = () => {
-    console.log("Starting Tests")
+    console.log("Running Tests")
     multichain.getInfo((err, res) => {
         assert(res, "Could not get info");
     })
@@ -67,6 +67,10 @@ let startTests = () => {
         assert(addrInfo);
         assert(addrInfo.isvalid === true);
         assert(addrInfo.address === this.address1);
+        return multichain.dumpPrivKeyPromise({address: this.address1})
+    })
+    .then(privateKey => {
+        assert(privateKey)
         return multichain.grantPromise({
             addresses: this.address1,
             permissions: "send,receive,issue,admin"
