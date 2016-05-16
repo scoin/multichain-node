@@ -454,6 +454,25 @@ let confirmCallback4 = () => {
         assert(multiSigWallet.address);
     })
     .then(() => {
+        return multichain.pausePromise({
+            tasks: "mining,incoming"
+        })
+    })
+    .then(() => {
+        return multichain.setLastBlockPromise({
+            hash: "1"
+        })
+    })
+    .then(hash => {
+        assert(hash);
+        return multichain.clearMemPoolPromise()
+    })
+    .then(() => {
+        return multichain.resumePromise({
+            tasks: "mining,incoming"
+        })
+    })
+    .then(() => {
         console.log("Finished Successfully")
     })
     .catch(err => {
