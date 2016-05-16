@@ -437,6 +437,13 @@ let confirmCallback3 = () => {
 let confirmCallback4 = () => {
     bluebird.bind(this)
     .then(() => {
+        return multichain.getMultiBalancesPromise({
+            addresses: [this.address1, this.address2],
+            assets: ["foocoin", "barcoin"]
+        })
+    })
+    .then(balances => {
+        assert(balances)
         return multichain.createMultiSigPromise({
             nrequired: 2,
             keys: [this.address1, this.address2]
