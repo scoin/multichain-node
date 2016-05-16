@@ -1,7 +1,7 @@
 A native Javascript client built for Multichain and Bitcoin
 ---------------------------------------------------
 
-Note: The current version is compatible with Multichain Alpha 20, released 5/3/2016. For previous versions of Multichain, see [Releases](https://github.com/scoin/multichain-node/releases).
+Note: The current version is compatible with Multichain Alpha 21, released 5/16/2016. For previous versions of Multichain, see [Releases](https://github.com/scoin/multichain-node/releases).
 
 All methods from the [Multichain API spec](http://www.multichain.com/developers/json-rpc-api/) are available. As multichaind is fully compatible with bitcoind, this _should_ work for bitcoin as well.
 
