@@ -42,6 +42,10 @@ let startTests = () => {
         assert(res, "Could not get info");
     })
 
+    multichain.getMiningInfo((err, res) => {
+        assert(res, "Could not get mining info");
+    })
+
     multichain.getBlockchainParams((err, res) => {
         assert(res);
     })
