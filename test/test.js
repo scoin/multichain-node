@@ -90,11 +90,24 @@ let startTests = () => {
         return multichain.grantFromPromise({
             from: this.address1,
             to: this.address2,
-            permissions: "send,receive,issue"
+            permissions: "issue"
         })
     })
     .then(permissionsTxid => {
         assert(permissionsTxid)
+        return multichain.grantWithMetadataPromise({addresses: this.address2, permissions: "send", data: new Buffer("some important data").toString("hex")})
+    })
+    .then(permissionsTxid => {
+        assert(permissionsTxid)
+        return multichain.grantWithMetadataFromPromise({from: this.address1, to: this.address2, permissions: "receive", data: new Buffer("another important data").toString("hex")})
+    })
+    .then(permissionsTxid => {
+        assert(permissionsTxid)
+        return multichain.getWalletTransactionPromise({txid: permissionsTxid})
+    })
+    .then(txData => {
+        let msg = new Buffer(txData.data[0], "hex").toString("utf8");
+        assert.equal(msg, "another important data")
         return multichain.listPermissionsPromise({
             addresses: `${this.address1},${this.address2}`,
             verbose: true
