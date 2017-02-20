@@ -664,6 +664,13 @@ let confirmCallback4 = () => {
             verbose: true
         })
     })
+    .then(getStreamItem => {
+        console.log("TEST: GET STREAM ITEM");
+        return multichain.getStreamItemPromise({
+            stream: "stream1",
+            txid: getStreamItem[0].txid
+        })
+    })
     .then(streamPublisherItems => {
         assert(streamPublisherItems)
 
