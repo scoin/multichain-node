@@ -12,7 +12,7 @@ CHAINPORT=6601
 mkdir $CHAINDIR
 
 multichain-util create $CHAINNAME --datadir=$CHAINDIR
-multichaind $CHAINNAME --datadir=$CHAINDIR --rpcuser=$CHAINNAME --rpcpassword=$CHAINNAME --rpcport=$CHAINPORT --sendfreetransactions & PID=$!; sleep 2
+multichaind $CHAINNAME --datadir=$CHAINDIR --rpcuser=$CHAINNAME --rpcpassword=$CHAINNAME --rpcport=$CHAINPORT --sendfreetransactions & PID=$!; sleep 5
 
 node "$TESTDIR/test.js"
 
