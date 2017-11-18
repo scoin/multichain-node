@@ -7,21 +7,21 @@ All methods from the [Multichain API spec](http://www.multichain.com/developers/
 
 See [commands.js](https://github.com/scoin/multichain-node/blob/development/lib/commands.js) for all methods and their required / optional parameters. 
 
-###Parser
+### Parser
 
 The library includes a parser so you can pass an unordered object containing the parameters and omit any optional parameters you want, as seen in the examples below. 
 
 You may also pass an ordered array of commands like you would for any JSON RPC client that will not be parsed.
 
-###Promisification
+### Promisification
 
 All commands require a callback, but have been tested to work with [Bluebird promisification](http://bluebirdjs.com/docs/api/promisification.html).
 
-###SSL
+### SSL
 
 SSL is supported. Pass your connection parameters as you would to the [core HTTPS library](https://nodejs.org/api/https.html#https_https_globalagent).
 
-###Usage
+### Usage
 
 To use in your project:
 
@@ -39,7 +39,7 @@ npm install
 npm test
 ```
 
-###Examples:
+### Examples:
 
 Many more examples in `test.js`, but here's some basics:
        
@@ -83,7 +83,7 @@ multichain.getRawTransaction({txid: someTxId}, (err, tx) => {
 
 
 ```
-###Tests
+### Tests
 
 All commands are tested. To run the tests, pull the repo and make sure multichaind and multichain-util are on your path.
 
