@@ -563,6 +563,7 @@ let confirmCallback4 = () => {
 
         console.log("TEST: CREATE STREAM")
         return multichain.createPromise({
+            type: "stream",
             name: "stream1",
             open: true
         })
@@ -572,6 +573,7 @@ let confirmCallback4 = () => {
 
         console.log("TEST: CREATE STREAM FROM")
         return multichain.createPromise({
+            type: "stream",
             name: "stream2",
             open: true,
             from: this.address2,
@@ -705,7 +707,7 @@ let confirmCallback4 = () => {
         assert(hash);
 
         console.log("TEST: CLEAR MEMPOOL")
-        return multichain.clearMemPoolPromise()
+        return multichain.clearMempoolPromise()
     })
     .then(() => {
         console.log("TEST: RESUME")
