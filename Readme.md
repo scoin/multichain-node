@@ -1,7 +1,7 @@
 A native Javascript client built for Multichain and Bitcoin
 ---------------------------------------------------
 
-Note: The current version is compatible with Multichain 1.0.2. For previous versions of Multichain that may be incompatible, see [Releases](https://github.com/scoin/multichain-node/releases).
+Note: The current version is compatible with Multichain 1.0.x. For previous versions of Multichain that may be incompatible, see [Releases](https://github.com/scoin/multichain-node/releases).
 
 All methods from the [Multichain API spec](http://www.multichain.com/developers/json-rpc-api/) are available. This library does not currently contain all bitcoind commands that are not part of the Multichain API spec, and as such is not really suitable for use with bitcoind. If you would like to add these commands, please submit a pull request with tests.
 
@@ -13,9 +13,9 @@ The library includes a parser so you can pass an unordered object containing the
 
 You may also pass an ordered array of commands like you would for any JSON RPC client that will not be parsed.
 
-### Promisification
+### Promises
 
-All commands require a callback, but have been tested to work with [Bluebird promisification](http://bluebirdjs.com/docs/api/promisification.html).
+All commands can be supplied a callback. If a callback is not supplied, a native Promise will be returned.
 
 ### SSL
 
