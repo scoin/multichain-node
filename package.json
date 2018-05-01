@@ -1,6 +1,6 @@
 {
   "name": "multichain-node",
-  "version": "2.1.6-version1.0.2",
+  "version": "2.2.0-version1.0.4",
   "description": "A wrapper for the Multichain JSON-RPC api that parses your input.",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,5 @@
   },
   "homepage": "https://github.com/scoin/multichain-node#readme",
   "dependencies": {},
-  "devDependencies": {
-    "bluebird": "^3.3.3"
-  }
+  "devDependencies": {}
 }
