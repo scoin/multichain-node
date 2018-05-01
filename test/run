@@ -5,10 +5,12 @@ else
     TESTDIR=$PWD/test
 fi
 
+
 CHAINDIR="$TESTDIR/temp"
 CHAINNAME=test
 CHAINPORT=6601
 
+rm -r $CHAINDIR
 mkdir $CHAINDIR
 
 multichain-util create $CHAINNAME --datadir=$CHAINDIR
