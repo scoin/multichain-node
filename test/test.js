@@ -9,35 +9,40 @@ const connection = {
     pass: "test"
 }
 
-const bluebird = require("bluebird");
-const multichain = bluebird.promisifyAll(require("../index.js")(connection), {suffix: "Promise"});
+const multichain = require("../index.js")(connection);
 
-let listenForConfirmations = (txid, cb) => {
+let listenForConfirmations = (txid) => {
     console.log("WAITING FOR CONFIRMATIONS")
-    var interval = setInterval(() => {
-        getConfirmations(txid, (err, confirmations) => {
-            if(confirmations > 0){
-                clearInterval(interval);
-                return cb(null, true);
-            }
-            return cb(null, false);
-        }) 
-    }, 5000)
+
+    return new Promise((resolve, reject) => {
+        var interval = setInterval(() => {
+            
+            getConfirmations(txid)
+            .then(confirmations => {
+                if(confirmations > 0){
+                    clearInterval(interval);
+                    return resolve()
+                }
+            })
+            .catch(err => {
+                return reject(err);
+            })
+
+        }, 5000)
+    })
 }
 
-let getConfirmations = (txid, cb) => {
-    multichain.getWalletTransaction({
+let getConfirmations = (txid) => {
+    return multichain.getWalletTransaction({
         txid: txid
-    }, (err, tx) => {
-        if(err){
-            console.log("look for confirmed state", err)
-            return cb(err)
-        }
-        return cb(null, tx.confirmations);
+    })
+    .then(res => {
+        return res.confirmations;
     })
 }
 
 let startTests = () => {
+    const state = {};
     console.log("Running Tests")
 
     console.log("TEST: GET INFO")
@@ -71,28 +76,30 @@ let startTests = () => {
     })
 
     console.log("TEST: GET NEW ADDRESS")
-    multichain.getNewAddressPromise()
+    multichain.getNewAddress()
     .then(address => {
         assert(address, "Could not get new address")
-        this.address1 = address;
+        state.address1 = address;
 
         console.log("TEST: VALIDATE ADDRESS")
-        return multichain.validateAddressPromise({address: this.address1})
+        // return multichain.validateAddress({address: state.address1})
+        return multichain.validateAddress({address: state.address1})
     })
     .then(addrInfo => {
         assert(addrInfo);
         assert(addrInfo.isvalid === true);
-        assert(addrInfo.address === this.address1);
+        assert(addrInfo.address === state.address1);
 
         console.log("TEST: DUMP PRIVATE KEY")
-        return multichain.dumpPrivKeyPromise({address: this.address1})
+        // return multichain.dumpPrivKey({address: state.address1})
+        return multichain.dumpPrivKey({address: state.address1})
     })
     .then(privateKey => {
         assert(privateKey)
 
         console.log("TEST: GRANT")
-        return multichain.grantPromise({
-            addresses: this.address1,
+        return multichain.grant({
+            addresses: state.address1,
             permissions: "send,receive,issue,admin"
         })
     })
@@ -100,16 +107,16 @@ let startTests = () => {
         assert(permissionsTxid)
         
         console.log("TEST: GET NEW ADDRESS")
-        return multichain.getNewAddressPromise();
+        return multichain.getNewAddress();
     })
     .then(address2 => {
         assert(address2, "Could not get new address 2");
-        this.address2 = address2;
+        state.address2 = address2;
 
         console.log("TEST: GRANT FROM")
-        return multichain.grantFromPromise({
-            from: this.address1,
-            to: this.address2,
+        return multichain.grantFrom({
+            from: state.address1,
+            to: state.address2,
             permissions: "issue"
         })
     })
@@ -117,27 +124,27 @@ let startTests = () => {
         assert(permissionsTxid)
         
         console.log("TEST: GRANT WITH METADATA")
-        return multichain.grantWithMetadataPromise({addresses: this.address2, permissions: "send", data: new Buffer("some important data").toString("hex")})
+        return multichain.grantWithMetadata({addresses: state.address2, permissions: "send", data: new Buffer("some important data").toString("hex")})
     })
     .then(permissionsTxid => {
         assert(permissionsTxid)
         
         console.log("TEST: GRANT WITH METADATA FROM")
-        return multichain.grantWithMetadataFromPromise({from: this.address1, to: this.address2, permissions: "receive", data: new Buffer("another important data").toString("hex")})
+        return multichain.grantWithMetadataFrom({from: state.address1, to: state.address2, permissions: "receive", data: new Buffer("another important data").toString("hex")})
     })
     .then(permissionsTxid => {
         assert(permissionsTxid)
         
         console.log("TEST: GET WALLET TRANSACTION")
-        return multichain.getWalletTransactionPromise({txid: permissionsTxid})
+        return multichain.getWalletTransaction({txid: permissionsTxid})
     })
     .then(txData => {
         let msg = new Buffer(txData.data[0], "hex").toString("utf8");
         assert.equal(msg, "another important data")
         
         console.log("TEST: LIST PERMISSIONS")
-        return multichain.listPermissionsPromise({
-            addresses: `${this.address1},${this.address2}`,
+        return multichain.listPermissions({
+            addresses: `${state.address1},${state.address2}`,
             verbose: true
         })
     })
@@ -152,25 +159,25 @@ let startTests = () => {
             return acc;
         }, {})
 
-        assert("send" in permissionSet[this.address1].types)
-        assert("receive" in permissionSet[this.address1].types)
-        assert("issue" in permissionSet[this.address1].types)
-        assert("admin" in permissionSet[this.address1].types)
+        assert("send" in permissionSet[state.address1].types)
+        assert("receive" in permissionSet[state.address1].types)
+        assert("issue" in permissionSet[state.address1].types)
+        assert("admin" in permissionSet[state.address1].types)
 
-        assert("send" in permissionSet[this.address2].types)
-        assert("receive" in permissionSet[this.address2].types)
-        assert("issue" in permissionSet[this.address2].types)
-        assert(permissionSet[this.address2].admin === this.address1)
+        assert("send" in permissionSet[state.address2].types)
+        assert("receive" in permissionSet[state.address2].types)
+        assert("issue" in permissionSet[state.address2].types)
+        assert(permissionSet[state.address2].admin === state.address1)
         
         console.log("TEST: REVOKE")
-        return multichain.revokePromise({addresses: this.address2, permissions: "issue"})
+        return multichain.revoke({addresses: state.address2, permissions: "issue"})
     })
     .then(revokeTxid => {
         assert(revokeTxid);
         
         console.log("TEST: ISSUE")
-        return multichain.issuePromise({
-            address: this.address1, 
+        return multichain.issue({
+            address: state.address1, 
             asset: {
                 name: "foocoin",
                 open: true
@@ -181,35 +188,21 @@ let startTests = () => {
     })
     .then(issueTxid => {
         assert(issueTxid);
-        listenForConfirmations(issueTxid, (err, confirmed) => {
-            if(err){
-                throw err;
-            }
-            if(confirmed === true){
-                confirmCallback1.call(this);
-            }
-        })
+        return listenForConfirmations(issueTxid)
     })
-    .catch(err => {
-        console.log(err)
-        throw err;
-    })
-}
-
-let confirmCallback1 = () => {
-    bluebird.bind(this)
-    .then(() => {
-        
+    .then(_ => {
         console.log("TEST: LIST ASSETS")
-        return multichain.listAssetsPromise()
+        return multichain.listAssets({
+            count: 50
+        })
     })
     .then(assets => {
         assert(assets)
         
         console.log("TEST: ISSUE FROM")
-        return multichain.issueFromPromise({
-            from: this.address1,
-            to: this.address2,
+        return multichain.issueFrom({
+            from: state.address1,
+            to: state.address2,
             asset: "barcoin",
             qty: 10000,
             details: {
@@ -219,46 +212,30 @@ let confirmCallback1 = () => {
     })
     .then(issueTxid => {
         assert(issueTxid);
-        this.issueTxid = issueTxid;
+        state.issueTxid = issueTxid;
         
         console.log("TEST: GET ADDRESS BALANCES")
-        return multichain.getAddressBalancesPromise({
-            address: this.address2,
+        return multichain.getAddressBalances({
+            address: state.address2,
             minconf: 0
         })
     })
     .then(balances => {
         assert(balances);
-        listenForConfirmations(this.issueTxid, (err, confirmed) => {
-            if(err){
-                throw err;
-            }
-            if(confirmed == true){
-                confirmCallback2.call(this);
-            }
-        })
+        return listenForConfirmations(state.issueTxid)
     })
-    .catch(err => {
-        console.log(err)
-        throw(err)
-    })
-}
-
-let confirmCallback2 = () => {
-    bluebird.bind(this)
-    .then(() => {
-        
+    .then(_ => {
         console.log("TEST: GET TOTAL BALANCES")
-        return multichain.getTotalBalancesPromise({minconf: 1})
+        return multichain.getTotalBalances({minconf: 1})
     })
     .then(totalBalances => {
         assert(totalBalances)
         assert(totalBalances.length === 2)
         
         console.log("TEST: SEND ASSET FROM")
-        return multichain.sendAssetFromPromise({
-            from: this.address1,
-            to: this.address2,
+        return multichain.sendAssetFrom({
+            from: state.address1,
+            to: state.address2,
             asset: "foocoin",
             qty: 50
         })
@@ -267,9 +244,9 @@ let confirmCallback2 = () => {
         assert(txid);
         
         console.log("TEST: SEND FROM ADDRESS")
-        return multichain.sendFromAddressPromise({
-            from: this.address2,
-            to: this.address1,
+        return multichain.sendFromAddress({
+            from: state.address2,
+            to: state.address1,
             amount: {
                 "barcoin": 50
             }
@@ -279,7 +256,7 @@ let confirmCallback2 = () => {
         assert(txid);
 
         console.log("TEST: GET WALLET TRANSACTION")
-        return multichain.getWalletTransactionPromise({
+        return multichain.getWalletTransaction({
             txid: txid
         })
     })
@@ -287,9 +264,9 @@ let confirmCallback2 = () => {
         assert(tx);
 
         console.log("TEST: SEND WITH METADATA FROM")
-        return multichain.sendWithMetadataFromPromise({
-            from: this.address1,
-            to: this.address2,
+        return multichain.sendWithMetadataFrom({
+            from: state.address1,
+            to: state.address2,
             amount: {
                 foocoin: 150
             },
@@ -298,34 +275,19 @@ let confirmCallback2 = () => {
     })
     .then(txid => {
         assert(txid);
-        this.txid = txid;
-        listenForConfirmations(txid, (err, confirmed) => {
-            if(err){
-                throw err;
-            }
-            if(confirmed == true){
-                confirmCallback3.call(this);
-            }
-        })
+        state.txid = txid;
+        return listenForConfirmations(txid)
     })
-    .catch(err => {
-        console.log(err)
-        throw err;
-    })
-}
-
-let confirmCallback3 = () => {
-    bluebird.bind(this)
-    .then(() => {
+    .then(_ => {
         console.log("TEST: GET RAW TRANSACTION")
-        return multichain.getRawTransactionPromise({
-            txid: this.txid
+        return multichain.getRawTransaction({
+            txid: state.txid
         })
     })
     .then(txHex => {
         assert(txHex);
         console.log("TEST: DECODE RAW TRANSACTION")
-        return multichain.decodeRawTransactionPromise({
+        return multichain.decodeRawTransaction({
             hexstring: txHex
         })
     })
@@ -334,26 +296,26 @@ let confirmCallback3 = () => {
         assert(tx.data[0] = new Buffer("a nice message, for you").toString("hex"));
         
         console.log("TEST: LIST ADDRESS TRANSACTIONS")
-        return multichain.listAddressTransactionsPromise({
-            address: this.address2
+        return multichain.listAddressTransactions({
+            address: state.address2
         })
     })
     .then(transactions => {
         assert(transactions)
 
         console.log("TEST: PREPARE LOCK UNSPENT FROM")
-        return bluebird.join(multichain.prepareLockUnspentFromPromise({
-            from: this.address1,
+        return Promise.all([multichain.prepareLockUnspentFrom({
+            from: state.address1,
             assets: {
                 foocoin: 100
             }
         }),
-        multichain.prepareLockUnspentFromPromise({
-            from: this.address2,
+        multichain.prepareLockUnspentFrom({
+            from: state.address2,
             assets: {
                 barcoin: 100
             }
-        }))
+        })])
     })
     .then(lockedOutputs => {
         assert(lockedOutputs);
@@ -362,21 +324,21 @@ let confirmCallback3 = () => {
             inputs: lockedOutputs,
             amounts: {}
         }
-        rawTxData.amounts[this.address1] = {
+        rawTxData.amounts[state.address1] = {
             barcoin: 100
         }
-        rawTxData.amounts[this.address2] = {
+        rawTxData.amounts[state.address2] = {
             foocoin: 100
         }
 
         console.log("TEST: CREATE RAW TRANSACTION")
-        return multichain.createRawTransactionPromise(rawTxData)
+        return multichain.createRawTransaction(rawTxData)
     })
     .then(rawTx => {
         assert(rawTx);
 
         console.log("TEST: APPEND RAW METADATA")
-        return multichain.appendRawMetadataPromise({
+        return multichain.appendRawMetadata({
             tx: rawTx,
             data: new Buffer("some more metadata").toString("hex")
         })
@@ -385,7 +347,7 @@ let confirmCallback3 = () => {
         assert(rawTx);
 
         console.log("TEST: SIGN RAW TRANSACTION")
-        return multichain.signRawTransactionPromise({
+        return multichain.signRawTransaction({
             hexstring: rawTx
         })
     })
@@ -394,7 +356,7 @@ let confirmCallback3 = () => {
         assert(signedTx.hex);
 
         console.log("TEST: SEND RAW TRANSACTION")
-        return multichain.sendRawTransactionPromise({
+        return multichain.sendRawTransaction({
             hexstring: signedTx.hex
         })
     })
@@ -402,7 +364,7 @@ let confirmCallback3 = () => {
         assert(txid);
 
         console.log("TEST: GET RAW TRANSACTION")
-        return multichain.getRawTransactionPromise({
+        return multichain.getRawTransaction({
             txid: txid,
             verbose: 1
         })
@@ -411,7 +373,7 @@ let confirmCallback3 = () => {
         assert(tx);
 
         console.log("TEST: GET TX OUT")
-        return multichain.getTxOutPromise({
+        return multichain.getTxOut({
             txid: tx.txid,
             vout: tx.vout[0].n,
             unconfirmed: true
@@ -422,13 +384,13 @@ let confirmCallback3 = () => {
         assert(txOut.assets.length === 1);
 
         console.log("TEST: LIST LOCK UNSPENT")
-        return multichain.listLockUnspentPromise()
+        return multichain.listLockUnspent()
     })
     .then(unspent => {
         assert(unspent);
 
         console.log("TEST: LOCK UNSPENT")
-        return multichain.lockUnspentPromise({
+        return multichain.lockUnspent({
             unlock: true,
             outputs: unspent
         })
@@ -437,15 +399,15 @@ let confirmCallback3 = () => {
         assert(unlocked);
 
         console.log("TEST: GET ADDRESS BALANCES")
-        return multichain.getAddressBalancesPromise({
+        return multichain.getAddressBalances({
             minconf: 0,
-            address: this.address1
+            address: state.address1
         })
     })
     .then(balances => {
         assert(balances);
         console.log("TEST: PREPARE LOCK UNSPENT")
-        return multichain.prepareLockUnspentPromise({
+        return multichain.prepareLockUnspent({
             assets: {
                 barcoin: 500
             }
@@ -453,10 +415,10 @@ let confirmCallback3 = () => {
     })
     .then(outputs => {
         assert(outputs);
-        this.outputForExchange = outputs;
+        state.outputForExchange = outputs;
 
         console.log("TEST: PREPARE LOCK UNSPENT")
-        return multichain.prepareLockUnspentPromise({
+        return multichain.prepareLockUnspent({
             assets: {
                 foocoin: 200
             }
@@ -466,7 +428,7 @@ let confirmCallback3 = () => {
         assert(outputs)
 
         console.log("TEST: CREATE RAW EXCHANGE")
-        return multichain.createRawExchangePromise({
+        return multichain.createRawExchange({
             txid: outputs.txid,
             vout: outputs.vout,
             assets: {
@@ -478,10 +440,10 @@ let confirmCallback3 = () => {
         assert(rawPartialTx);
 
         console.log("TEST: APPEND RAW EXCHANGE")
-        return multichain.appendRawExchangePromise({
+        return multichain.appendRawExchange({
             hexstring: rawPartialTx,
-            txid: this.outputForExchange.txid,
-            vout: this.outputForExchange.vout,
+            txid: state.outputForExchange.txid,
+            vout: state.outputForExchange.vout,
             assets: {
                 foocoin: 200
             }
@@ -489,10 +451,10 @@ let confirmCallback3 = () => {
     })
     .then(rawExchange => {
         assert(rawExchange);
-        this.rawExchange = rawExchange;
+        state.rawExchange = rawExchange;
 
         console.log("TEST: DECODE RAW EXCHANGE")
-        return multichain.decodeRawExchangePromise({
+        return multichain.decodeRawExchange({
             hexstring: rawExchange.hex
         })
     })
@@ -500,15 +462,15 @@ let confirmCallback3 = () => {
         assert(decodedExchange);
 
         console.log("TEST: SEND RAW TRANSACTION")
-        return multichain.sendRawTransactionPromise({
-            hexstring: this.rawExchange.hex
+        return multichain.sendRawTransaction({
+            hexstring: state.rawExchange.hex
         })
     })
     .then(txid => {
         assert(txid);
 
         console.log("TEST: GET WALLET TRANSACTION")
-        return multichain.getWalletTransactionPromise({
+        return multichain.getWalletTransaction({
             txid: txid,
             verbose: true
         })
@@ -517,34 +479,19 @@ let confirmCallback3 = () => {
         assert(tx);
 
         console.log("TEST: ISSUE MORE")
-        return multichain.issueMorePromise({
-            address: this.address2,
+        return multichain.issueMore({
+            address: state.address2,
             asset: "foocoin",
             qty: 10000
         })
     })
     .then(txid => {
-        listenForConfirmations(txid, (err, confirmed) => {
-            if(err){
-                throw err;
-            }
-            if(confirmed == true){
-                confirmCallback4.call(this);
-            }
-        })
+        return listenForConfirmations(txid);
     })
-    .catch(err => {
-        console.log(err)
-        throw err;
-    })
-}
-
-let confirmCallback4 = () => {
-    bluebird.bind(this)
-    .then(() => {
+    .then(_ => {
         console.log("TEST: GET MULTI BALANCES")
-        return multichain.getMultiBalancesPromise({
-            addresses: [this.address1, this.address2],
+        return multichain.getMultiBalances({
+            addresses: [state.address1, state.address2],
             assets: ["foocoin", "barcoin"]
         })
     })
@@ -552,9 +499,9 @@ let confirmCallback4 = () => {
         assert(balances)
 
         console.log("TEST: CREATE MULTI SIG")
-        return multichain.createMultiSigPromise({
+        return multichain.createMultiSig({
             nrequired: 2,
-            keys: [this.address1, this.address2]
+            keys: [state.address1, state.address2]
         })
     })
     .then(multiSigWallet => {
@@ -562,7 +509,7 @@ let confirmCallback4 = () => {
         assert(multiSigWallet.address);
 
         console.log("TEST: CREATE STREAM")
-        return multichain.createPromise({
+        return multichain.create({
             type: "stream",
             name: "stream1",
             open: true
@@ -572,11 +519,11 @@ let confirmCallback4 = () => {
         assert(stream)
 
         console.log("TEST: CREATE STREAM FROM")
-        return multichain.createPromise({
+        return multichain.create({
             type: "stream",
             name: "stream2",
             open: true,
-            from: this.address2,
+            from: state.address2,
             details: {
                 "something": "yes"
             }
@@ -586,19 +533,19 @@ let confirmCallback4 = () => {
         assert(stream2)
 
         console.log("TEST: LIST STREAMS")
-        return multichain.listStreamsPromise()
+        return multichain.listStreams()
     })
     .then(streamList => {
         assert.equal(streamList.length, 3)
 
         console.log("TEST: SUBSCRIBE STREAM")
-        return multichain.subscribePromise({
+        return multichain.subscribe({
             stream: "stream1"
         })
     })
     .then(subscribed => {
         console.log("TEST: PUBLISH STREAM")
-        return multichain.publishPromise({
+        return multichain.publish({
             stream: "stream1",
             key: "test1",
             data: new Buffer("some stream data").toString("hex")
@@ -608,8 +555,8 @@ let confirmCallback4 = () => {
         assert(hexstring)
 
         console.log("TEST: PUBLISH FROM")
-        return multichain.publishFromPromise({
-            from: this.address2,
+        return multichain.publishFrom({
+            from: state.address2,
             stream: "stream1",
             key: "test2",
             data: new Buffer("some more stream data").toString("hex")
@@ -619,7 +566,7 @@ let confirmCallback4 = () => {
         assert(hexstring);
 
         console.log("TEST: LIST STREAM KEYS");
-        return multichain.listStreamKeysPromise({
+        return multichain.listStreamKeys({
             stream: "stream1"
         })
     })
@@ -627,7 +574,7 @@ let confirmCallback4 = () => {
         assert.equal(streamKeys.length, 2);
 
         console.log("TEST: LIST STREAM KEY ITEMS");
-        return multichain.listStreamKeyItemsPromise({
+        return multichain.listStreamKeyItems({
             stream: "stream1",
             key: "test1",
             verbose: true
@@ -636,10 +583,10 @@ let confirmCallback4 = () => {
     .then(streamKeyItems => {
         assert.equal(streamKeyItems.length, 1);
         assert.equal(streamKeyItems[0].key, "test1");
-        this.streamData = streamKeyItems[0].data;
+        state.streamData = streamKeyItems[0].data;
 
         console.log("TEST: GET TXOUTDATA")
-        return multichain.getTxOutDataPromise({
+        return multichain.getTxOutData({
             txid: streamKeyItems[0].txid,
             vout: 0
         })
@@ -647,10 +594,10 @@ let confirmCallback4 = () => {
     })
     .then(txData => {
         assert(txData)
-        assert.equal(txData, this.streamData)
+        assert.equal(txData, state.streamData)
 
         console.log("TEST: LIST STREAM ITEMS")
-        return multichain.listStreamItemsPromise({
+        return multichain.listStreamItems({
             stream: "stream1",
             verbose: true
         })
@@ -660,15 +607,15 @@ let confirmCallback4 = () => {
         assert.equal(streamItems.length, 2)
 
         console.log("TEST: LIST STREAM PUBLISHER ITEMS")
-        return multichain.listStreamPublisherItemsPromise({
+        return multichain.listStreamPublisherItems({
             stream: "stream1",
-            address: this.address2,
+            address: state.address2,
             verbose: true
         })
     })
     .then(getStreamItem => {
         console.log("TEST: GET STREAM ITEM");
-        return multichain.getStreamItemPromise({
+        return multichain.getStreamItem({
             stream: "stream1",
             txid: getStreamItem[0].txid
         })
@@ -677,7 +624,7 @@ let confirmCallback4 = () => {
         assert(streamPublisherItems)
 
         console.log("TEST: LIST STREAM PUBLISHERS")
-        return multichain.listStreamPublishersPromise({
+        return multichain.listStreamPublishers({
             stream: "stream1"
         })
     })
@@ -685,21 +632,21 @@ let confirmCallback4 = () => {
         assert(streamPublishers)
 
         console.log("TEST: UNSUBSCRIBE")
-        return multichain.unsubscribePromise({
+        return multichain.unsubscribe({
             stream: "stream1"
         })
     })
     .then(unsubbed => {
 
         console.log("TEST: PAUSE")
-        return multichain.pausePromise({
+        return multichain.pause({
             tasks: "mining,incoming"
         })
     })
     .then(() => {
 
         console.log("TEST: SET LAST BLOCK")
-        return multichain.setLastBlockPromise({
+        return multichain.setLastBlock({
             hash: "1"
         })
     })
@@ -707,11 +654,11 @@ let confirmCallback4 = () => {
         assert(hash);
 
         console.log("TEST: CLEAR MEMPOOL")
-        return multichain.clearMempoolPromise()
+        return multichain.clearMempool()
     })
     .then(() => {
         console.log("TEST: RESUME")
-        return multichain.resumePromise({
+        return multichain.resume({
             tasks: "mining,incoming"
         })
     })
